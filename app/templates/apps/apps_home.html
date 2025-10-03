@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %} DB App {% endblock %}
+{% block header %} My App List {% endblock %}
+
+{% block content %}
+<h3>DB App List</h3>
+<h4>위 링크를 찾아가세요.</h4>
+<div class="items">
+  <a class="btn btn-outline-primary" href="/auth/login">Login</a>
+  <a class="btn btn-outline-primary" href="/auth/register">Register</a>
+  <a class="btn btn-outline-primary" href="/auth/logout">Logout</a>
+  <a class="btn btn-outline-primary" href="/auth/account">Account</a>
+</div>
+{% endblock %}

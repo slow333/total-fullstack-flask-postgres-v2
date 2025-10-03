@@ -12,11 +12,6 @@
 :root {
   --font-basic: 'Noto Sans KR', sans-serif, serif ;
   --font-header: 'Roboto', 'Noto Sans KR', sans-serif;
-  --text-xxl: 1.8rem;
-  --text-xl: 1.6rem;
-  --text-lg: 1.2rem;
-  --text-md: 1rem;
-  --text-sm: 0.9rem;
 
   --c-blue: #0d6efd;
   --c-indigo: #6610f2;
@@ -117,9 +112,7 @@ section {
 /* ========= sub menu =========== */
 .sub-menu {
   position: relative;
-  margin-top: 2.4rem;
-  width: 100%;
-  height: 100%;
+  margin-top: 2.8rem;
   display:flex;
   flex-direction: row;
   align-items: center;
@@ -270,6 +263,24 @@ h6 {
   font-style: italic;
   font-weight: 500;
 }
+.fs-xxl {
+  font-size: 1.8rem;
+}
+.fs-xl {
+  font-size: 1.6rem;
+}
+.fs-lg {
+  font-size: 1.2rem;
+}
+.fs-md {
+  font-size: 1rem;
+}
+.fs-sm {
+  font-size: 0.8rem;
+}
+.fs-xs {
+  font-size: 0.6rem;
+}
 p {
   font-size: 1rem;
   font-weight: 400;
@@ -309,12 +320,19 @@ pre, xmp {
 /* ========= 콤퍼넌트 =========== */
 input {
   width:100%;
-  padding: 2px 10px;
+  padding: 4px 10px;
   font-size: var(--text-md);
 }
-button, input[type='submit']{
+textarea {
+  width:100%;
+  height: 150px;
+  padding: 6px 10px;
+  font-size: var(--text-md);
+  resize: vertical;
+}
+/* button, input[type='submit']{
   min-width: 50px;
-  padding: 2px 10px;
+  padding: 4px 10px;
   border: none;
   border-radius: 4px;
   background-color: var(--c-blue);
@@ -322,6 +340,7 @@ button, input[type='submit']{
   cursor: pointer;
   font-size: var(--text-md);
   text-decoration: none;
+  width: auto;
 }
 button:hover, input[type='submit']:hover {
   opacity: 0.8;
@@ -333,34 +352,9 @@ form {
   align-items: center;
   justify-content: center;
   color: rgb(32, 1, 1);
-}
+} */
 label {
   font-size: var(--text-md);
-}
-.link-list {
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-  justify-content: center;
-  gap: 6px;
-}
-.link-list a, a.action {
-  display: inline-block;
-  text-decoration: none;
-  cursor: pointer;
-  color: var(--c-blue);
-  background-color: white;
-  border: 1px solid var(--c-blue);
-  border-radius: 4px;
-  padding: 2px 8px;
-  font-size: var(--text-sm);
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-a.action:any-link {
-  font-weight: 600;
-  font-family: 'Noto Sans KR', serif;
-  text-decoration: none;
 }
 
 .link-list a:hover , a.action:hover {
@@ -378,13 +372,11 @@ a.action:any-link {
  min-width: none;
 }
 
-.auth-form {
+/* .auth-form {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 600px;
-  margin: auto;
-  margin-top: 2rem;
+  margin: 1.2rem 1rem ;
 }
 .auth-form input[type="submit"] {
   padding: 10px;
@@ -394,40 +386,39 @@ a.action:any-link {
   display: block;
 }
 .auth-form textarea {
-  min-height: 100px;
-  width:100%;
   font-size: 1rem;
   padding: 10px
 }
 .auth-form input[type="text"] {
   font-size: 1rem;
   padding: 10px;
-  width:100%;
-  box-sizing: border-box;
-}
+  width: 100%;
+} */
+
 .items-container {
   display:flex;
   justify-content: space-between;
   border: 1px solid var(--c-border);
   border-radius: 5px;
   padding: 10px;
-  margin-bottom: 10px;
+  margin: 10px 0;
 }
 .items  {
   display: flex;
-  flex:1 1 20px;
   justify-content: start;
   align-items:baseline;
   gap: 10px;
 }
-.items a {
-  background-color: var(--c-green);
-  color: white;
+.items a:any-link {
+  display: inline-block;
+  text-decoration: none;
+  padding: 4px 10px;
+  font-size: var(--text-sm);
+  transition: all 0.3s ease;
 }
-.items a:hover {
-  background-color: var(--c-green-dark);
-  color: white;
-}
+/* .items a:hover {
+  color: opacity(0.3);
+} */
 .account-info {
   display: flex;
   flex-direction: column;
@@ -436,21 +427,15 @@ a.action:any-link {
 }
 table {
   border-collapse: collapse;
-  width: 100%;
   border: 1px solid #575656;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin: 20px 0;
   padding: 10px;
 }
 
-th,
-td {
+th, td {
   border: 1px solid #aaa;
   padding: 4px 6px;
   text-align: left;
-}
-td div {
-  min-width: 250px;
 }
 
 td div span:first-child {

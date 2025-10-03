@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %} MY Topic app {% endblock %}
+{% block header %}
+ Users List
+{% endblock %}
+  
+{% block content %}
+
+  <form action="/apps/users/{{  user['id'] }}/edit" method="POST" class="auth-form">
+    firstname: <input type="text" name="firstname" placeholder="firstname" value="{{ user['first_name'] }}"><br>
+    lastname:<input type="text" name="lastname" placeholder="lastname" value="{{ user['last_name'] }}"><br>
+    email: <input type="text" name="email" placeholder="email" value="{{ user['email'] }}"><br>
+    <input type="submit" value="Save">
+    <a class="action" href="/apps/users/">cancel</a>
+  </form>
+{% endblock %}

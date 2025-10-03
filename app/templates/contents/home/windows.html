@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %} windows  {% endblock %}
+
+{% block header %} windows {% endblock %}
+
+{% block content %}
+<section>
+  <h2>윈도우 폴더 공유</h2>
+  <pre>폴더 > 공유 ...
+폴더 공유 > everyone : rw
+계정생성 > id, pass 지정
+
+접속하는 PC에서 신규로 생성된 계정을 사용해서 접속
+id : slow33
+pass: 1111</pre>
+</section>
+<section>
+  <h2>윈도우 기본 폴더 지우기</h2>
+  <pre>
+레지스트리 경로는 아래와 같습니다.
+
+32bit
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\
+
+64bit
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace
+
+해당 경로명 아래에 각 각의 개체 폴더의 파일명은 아래와 같습니다.
+
+3D 개체: {0DB7E03F-FC29-4DC6-9020-FF41B59E513A}
+음악: {3dfdf296-dbec-4fb4-81d1-6a3438bcf4de}
+다운로드: {088e3905-0323-4b02-9826-5d99428e115f}
+사진: {24ad3ad4-a569-4530-98e1-ab02f9417aa8}
+동영상: {f86fa3ab-70d2-4fc7-9c99-fcbf05467f3a}
+문서: {d3162b92-9365-467a-956b-92703aca08af}
+바탕화면: {B4BFCC3A-DB2C-424C-B029-7FE99A87C641}
+
+해당 레지스트리 경로명에서 삭제를 원하는 개체 폴더를 제거하시면 되세요.
+64비트의 경우에는 안내해 드린 2개의 경로명 모두 개체 폴더를 제거해주세요.
+  </pre>
+</section>
+<section> 
+  <h2>windows wsl</h2>
+  <pre>https://learn.microsoft.com/ko-kr/windows/wsl/install-manual#step-4---download-the-linux-kernel-update-package
+  
+  su passwd root
+  wsl --list --online ==> 설치가능한 목록을 보여줌
+  ------------------------------------
+  NAME                                   FRIENDLY NAME
+  Ubuntu                                 Ubuntu
+  Debian                                 Debian GNU/Linux
+  kali-linux                             Kali Linux Rolling
+  Ubuntu-18.04                           Ubuntu 18.04 LTS
+  Ubuntu-20.04                           Ubuntu 20.04 LTS
+  Ubuntu-22.04                           Ubuntu 22.04 LTS
+  Ubuntu-24.04                           Ubuntu 24.04 LTS
+  OracleLinux_7_9                        Oracle Linux 7.9
+  OracleLinux_8_7                        Oracle Linux 8.7
+  OracleLinux_9_1                        Oracle Linux 9.1
+  openSUSE-Leap-15.5                     openSUSE Leap 15.5
+  SUSE-Linux-Enterprise-Server-15-SP4    SUSE Linux Enterprise Server 15 SP4
+  SUSE-Linux-Enterprise-15-SP5           SUSE Linux Enterprise 15 SP5
+  openSUSE-Tumbleweed                    openSUSE Tumbleweed
+  -------------------------------
+  wsl --install -d OracleLinux_8_7 
+  ==> 실행됨
+  wsl -l -v
+  ==> 해당 버젼을 다운 받아서 실행 해야함.
+  해당 리눅스를 열기하면... 어디서 하지 ???
+  실행 하면 죽음... 이유가 뭐지 ==> 
+  > wsl.exe --update ==> wsl version 2를 설치함
+  > wsl --set-default-version 2
+  > wsl -l -v ==> 설치된 버전과 상태를 알려줌
+  > id, password를 지정 : kalpa      1111
+  > wsl --shutdown
+  >  wsl --distribution OracleLinux_8_7 --user kalpa
+  
+  System has not been booted with systemd as init system
+  ==> 원인은 WSL은 루트 시스템 프로세스가 systemd가 아닌 init이기 때문입니다
+  /etc/wsl.conf
+  [boot]
+  systemd=true
+  ==> rebooting</pre>
+</section>
+<section>
+  <h2>password</h2>
+</section>
+{% endblock %}

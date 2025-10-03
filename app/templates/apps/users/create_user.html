@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %} MY Topic app {% endblock %}
+{% block header %}
+ Users List
+{% endblock %}
+  
+{% block content %}
+
+  <form action="/apps/users/create" method="POST" class="auth-form">
+    firstname: <input type="text" name="firstname" placeholder="firstname"><br>
+    lastname:<input type="text" name="lastname" placeholder="lastname"><br>
+    email: <input type="text" name="email" placeholder="email"><br>
+    <input type="submit" value="Create">
+    <a class="action" href="/apps/users/">cancel</a>
+  </form>
+{% endblock %}

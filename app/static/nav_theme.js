@@ -1,4 +1,4 @@
-export async function selectNavItems() {
+async function selectNavItems() {
   document.addEventListener('DOMContentLoaded',  async function (e) {
     e.preventDefault();
     const currLocation = this.location.pathname;
@@ -12,7 +12,7 @@ export async function selectNavItems() {
           parentNode.classList.add('curr-url');
         }
       }
-  });
+    });
   });
 }
 selectNavItems();

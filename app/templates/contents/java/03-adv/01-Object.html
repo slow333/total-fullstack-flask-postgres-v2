@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %} Java {% endblock %}
+
+{% block header %} Object {% endblock %}
+
+{% block content %}
+  <h5>모든 클래스의 조상</h5>
+<section>
+  <h3>Object class method</h3>
+  <h5>쓰레드와 관련된 메서드 : notify(), wait() 등</h5>
+  <h5>override 필요 : equals(), hashCode(), toString()</h5>
+  <h5>public Class getClass(); </h5>
+</section>
+<section>
+  <h3>equals(Object obj)</h3>
+  <pre>
+class Person {
+  int id;
+  Person(){};
+  Person(int id){
+    this.id = id;
+  }
+  @override
+  public boolean equals(Object o) {
+    if(o != null && o instanceof Person){
+      return id == (Person) o.id;
+    }
+  }
+} </pre>
+</section>
+{% endblock %}

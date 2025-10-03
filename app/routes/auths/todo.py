@@ -2,12 +2,12 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from ... import db
 from ...models import Todo
 
-bp = Blueprint('todo', __name__, url_prefix='/auths/todo')
+bp = Blueprint('todo', __name__, url_prefix='/apps/todo')
 
 @bp.route('/')
 def index():
   todos = Todo.query.all()
-  return render_template('auths/todo/todo_index.html', todos=todos)
+  return render_template('apps/todo/todo_index.html', todos=todos)
 
 @bp.route('/add', methods=['POST'])
 def add_todo():
@@ -21,7 +21,7 @@ def add_todo():
   db.session.commit()
   
   return redirect(url_for('todo.index'))
-
+ 
 @bp.route('/update/<int:todo_id>')
 def update_todo(todo_id):
   todo = Todo.query.get_or_404(todo_id)
