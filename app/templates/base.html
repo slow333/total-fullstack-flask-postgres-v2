@@ -1,0 +1,35 @@
+<!doctype html>
+<head>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico">
+  <script src="nav_theme.js" defer></script>
+  {% block import %}{% endblock %}
+  <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+  <div class="navbar-container">
+    {% include 'base/_navbar.html' %}
+    <div class="sub-menu"></div>
+  </div>
+  
+  <main>
+    <header>
+      {% block header %}{% endblock %}
+    </header>
+    {% block include %}{% endblock %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  
+  <button id="scrollTopBtn" title="맨 위로 이동">Top</button>
+
+</body>
+</html>
+    

@@ -1,0 +1,18 @@
+{% extends 'base/base.html' %}
+{% block import %} 
+<link rel="stylesheet" href="/static/css/page/auth.css" >
+{% endblock %}
+{% block title %} Reset Password {% endblock %}
+{% block header %} Reset Password {% endblock %}
+
+{% block content %}
+  <form method="post" class="auth-form" action="/auth/reset_password/{{ token }}">
+    {# {% csrf_token %} #}
+    {# {% form.hidden_tag() %} #}
+    <label for="password">Password: </label>
+    <input type="password" name="password" id="password" required><br>
+    <label for="confirm_password">Confirm Password: </label>
+    <input type="password" name="confirm_password" id="confirm_password" required><br>    
+    <input type="submit" value="Reset Password">
+  </form>
+{% endblock %}

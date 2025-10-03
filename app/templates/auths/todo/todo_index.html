@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %} Todo List {% endblock %}
+{% block header %} Todo List {% endblock %}
+
+{% block content %}
+<div>
+  {% for todo in todos %}
+    <div class="todo-item {% if todo.completed %}completed{% endif %}">
+      <input type="checkbox" {% if todo.completed %}checked{% endif %} >
+      <span>{{ todo.content }}</span>
+      <a href="{{ url_for('todo.update_todo', todo_id=todo.id) }}">
+          {% if todo.completed %}Undo{% else %}Complete{% endif %}
+      </a>
+      <a href="{{ url_for('todo.delete_todo', todo_id=todo.id) }}" style="color: red;">Delete</a>
+    </div>
+  {% else %}
+    <p>아직 할 일이 없습니다!</p>
+  {% endfor %}
+</div>
+
+<form class="add-form" action="{{ url_for('todo.add_todo') }}" method="POST">
+  <input type="text" name="content" placeholder="새로운 할 일을 입력하세요" size="30">
+  <button type="submit">추가</button>
+</form>
+{% endblock %}

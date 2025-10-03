@@ -1,0 +1,16 @@
+{% extends 'base/base.html' %}
+{% block import %} 
+<link rel="stylesheet" href="/static/css/page/auth.css" >
+{% endblock %}
+{% block title %} Request Password {% endblock %}
+{% block header %} Request Password {% endblock %}
+
+{% block content %}
+  <form method="post" class="auth-form">
+    {# {% csrf_token %} #}
+    {# {% form.hidden_tag() %} #}
+    <label for="email">Email</label>
+    <input type="email" name="email" id="email" required><br>
+    <input type="submit" value="Request Password Reset">
+  </form>
+{% endblock %}
