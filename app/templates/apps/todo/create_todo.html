@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %} MY Topic app {% endblock %}
+{% block header %}
+ Create Todo
+{% endblock %}
+
+{% block content %}
+  <form method="post" class="form-group d-flex flex-column gap-2 align-items-center" 
+    style="max-width: 600px; margin: auto;">
+    <label for="title">Title</label>
+    <input name="title" id="title" value="{{ request.form['title'] }}" required >
+    <label for="content">Content</label>
+    <textarea name="content" id="content" required >{{ request.form['content'] }}</textarea>
+    <label for="created">Date created</label>
+    <input type="date" name="created" id="created" >
+    <label for="completed">completed</label>
+    <input type="checkbox" name="completed" id="completed" >
+
+    <input class="btn btn-primary" type="submit" value="Create" >
+    <a class="btn btn-secondary w-100" href="/apps/todos/">cancel</a>
+  </form>
+{% endblock %}

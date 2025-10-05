@@ -9,14 +9,14 @@
     <button class="navbar-btn" id="spring"><a href="/spring/">Spring</a></button>
     <button class="navbar-btn" id="auth"><a href="/auth/">Auth</a></button>
   </div>
-  <ul class="user-menu">
-    <button id="theme-toggle" class="navbar-btn">Toggle Theme</button>
+  <ul class="user-menu d-flex align-items-center justify-content-end gap-2">
+    <button id="theme-toggle" class="navbar-btn mt-0 pt-0 mb-1 pb-1">Toggle Theme</button>
     {% if current_user.is_authenticated %}
-      <li><a href="/auth/account">{{ current_user.username }}</a></li>
-      <li><a href="/auth/logout">&nbsp;&nbsp; Log Out</a></li>
+      <li><a href="/apps/profiles/">{{ current_user.username }}</a></li>
+      <li><a href="/auth/logout">Log Out</a></li>
     {% else %}
       <li><a href="/auth/register">Register </a></li>
-      <li><a href="/auth/login">&nbsp;&nbsp; LogIn</a></li>
+      <li><a href="/auth/login">LogIn</a></li>
     {% endif %}
   </ul>
 </nav>

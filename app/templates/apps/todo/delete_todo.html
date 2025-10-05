@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %} MY Topic app {% endblock %}
+{% block header %}
+ Delete Todo
+{% endblock %}
+
+{% block content %}
+  <form method="post" class="form-group d-flex flex-column gap-2 align-items-center" 
+        style="max-width: 600px; margin: auto;">
+    <p>Are you sure you want to delete "{{ todo.title }}" todo?</p>
+    <input type="submit" value="Delete">
+    <a class="btn btn-danger w-100" href="/apps/todos/">cancel</a>
+  </form>
+{% endblock %}

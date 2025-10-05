@@ -8,6 +8,7 @@
 <section>
   <h2>주요 버전</h2>
   <h3>python version: 13.6</h3>
+  <h3>Database : postgresql로 구현</h3>
   <pre>
 blinker           1.9.0
 click             8.3.0
@@ -15,11 +16,13 @@ colorama          0.4.6
 Flask             3.1.2
 Flask-Admin       1.6.1
 Flask-Login       0.6.3
+Flask-Mail        0.10.0
 Flask-SQLAlchemy  3.1.1
 greenlet          3.2.4
 itsdangerous      2.2.0
 Jinja2            3.1.6
 MarkupSafe        3.0.3
+pillow            11.3.0
 pip               25.2
 psycopg2-binary   2.9.10
 python-dotenv     1.1.1
@@ -29,9 +32,252 @@ Werkzeug          3.1.3
 WTForms           3.2.1
   </pre>
 </section>
+<h2>프로젝트 구조</h2>
+<pre>
+/project-v2
+  /app
+    /routes
+    /static
+    /templates
+    __init__.py
+    models.py
+config.py     
+run.py
+.env
+.gitignore
+requirements.txt
+</pre>
 <section>
-  <h3>Database : postgresql</h3>
-  <p>로 구현</p>
+  <h3>__init__.py</h3>
+  <p>__init__로 하면 자신이 속한 폴더(app)에 직접 적용됨</p>
+  <p>다른 곳에서 import 를 사용할려면
+<br>from app import mail
+<br>from ... import db
+  </p>
+<pre>
+from flask import Flask, render_template
+from flask_sqlalchemy import SQLAlchemy
+from config import Config
+from flask_mail import Mail # type: ignore
+from flask_login import LoginManager
+
+# SQLAlchemy 객체 생성
+db = SQLAlchemy()
+# mail 객체 생성
+mail = Mail()
+# LoginManager 객체 생성(이래야 전체 프로젝트에서 사용가능)
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login_users'
+login_manager.login_message_category = 'info'
+
+def create_app(config_class=Config):
+  app = Flask(__name__)
+  
+  # 설정 클래스로부터 설정을 로드(config.py에 설정값을 로드함)
+  app.config.from_object(config_class)
+
+  # SQLAlchemy 객체를 앱과 연결
+  # (db, mail, login_manager 설정을 config.py -> app ->순으로 받아옮)
+  db.init_app(app)
+  mail.init_app(app)
+  login_manager.init_app(app)
+
+  # 블루프린트나 다른 라우트를 여기서 등록
+  with app.app_context():
+    from .models import User
+
+    @login_manager.user_loader
+    def load_user(user_id):
+      return User.query.get(int(user_id))
+    
+    # ========= 인증 관련 블루프린트 등록 ==============
+    from .routes.auths import auth
+    app.register_blueprint(auth.bp)
+...
+
+    # ========= 콘텐츠 관련 블루프린트 등록 ==============
+    from .routes.contents import database_bp
+    app.register_blueprint(database_bp.bp)
+...
+
+    @app.route('/')
+    @app.route('/home')
+    def home():
+      return render_template('index.html')
+...    
+    
+    # 데이터베이스 테이블 생성
+    db.create_all()
+
+  return app
+</pre>
+<h3>run.py</h3>
+<p>이렇게 별도 구성해야 app에 있는 것을 import 할 수 있음</p>
+<pre>
+from app import create_app
+
+app = create_app()
+
+if __name__ == '__main__':
+  app.run(debug=True)
+</pre>
+<h3>config.py</h3>
+<p>환경 설정 변수를 저장함</p>
+<pre>
+import os
+from dotenv import load_dotenv
+
+# .env 파일에서 환경 변수를 로드합니다.
+load_dotenv()
+
+class Config:
+  """애플리케이션 환경 설정"""
+  # Flask 앱의 보안을 위한 시크릿 키
+  SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
+
+  # 데이터베이스 설정
+  SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+  SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+  JSON_AS_ASCII = False  # 한글 깨짐 방지
+  # 이메일 설정
+  MAIL_SERVER = 'smtp.gmail.com'
+  MAIL_PORT = 587
+  MAIL_USE_TLS = True
+  MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+  MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  
+</pre>
+<h4>OS에서 환경 설정</h4>
+<pre>
+set env run script
+$ cat ~/.bashrc
+alias start="source /b/python/flask-tutorial/.venv/Scripts/activate"
+alias run="flask --app flaskr run --debug"
+DATABASE_URL="postgresql://postgres:1111@localhost/mydb"
+#             db type        id     pass    주소    db이름
+
+# ==== window에서는 ====
+고급시스템설정 > 환경변수 > 사용자변수 > 새로만들기
+변수이름 : PASSWORD, 변수값: 1111
+
+# flask_crud 
+### To run the app, 
+### bash: export FLASK_APP=pybo, export FLASK_DEBUG=true , flask run
+### cmd : set FLASK_APP=pybo, set FLASK_DEBUG=true, flask run  
+</pre>
+<h3>models.py</h3>
+<pre>
+from . import db
+from flask_login import UserMixin
+
+# <b>공통으로 사용할 모델</b>
+class BaseModel(db.Model):
+  __abstract__ = True # 자체에서 테이블을 생성하지 않음
+  __allow_unmapped__ = True # 내부에서 db와 상관없는 py객체 생성가능
+  id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+# <b>UserMixin을 해야 login 상태를 flask_login에서 관리할 수 있음</b>
+class User(UserMixin, BaseModel):
+  username = db.Column(db.String(64), unique=True, nullable=False)
+  email = db.Column(db.String(255), unique=True, nullable=False)
+  password = db.Column(db.Text(), nullable=False)
+
+  def __repr__(self):
+    return f'{self.username}'
+  
+class Todo(BaseModel):
+  title = db.Column(db.String(100), nullable=False)
+  content = db.Column(db.String(200), nullable=False)
+  created = db.Column(db.DateTime, default=db.func.current_timestamp())
+  completed = db.Column(db.Boolean, default=False)
+  # 관계 설정(외래키)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  # 이걸하면 todo.user.username 처럼 Todo 객체에서 User를 호출 가능
+  user = db.relationship('User', backref=db.backref('todos', lazy=True))
+
+  def __repr__(self):
+    return f'[Todo {self.id}>'
+
+class Blog(BaseModel):
+  title = db.Column(db.String(255), nullable=False)
+  content = db.Column(db.Text(), nullable=False)
+  comment = db.Column(db.Text(), nullable=True)
+  created = db.Column(db.DateTime, default=db.func.current_timestamp())
+  author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  # 이걸하면 blog.author.username 처럼 Todo 객체에서 User를 호출 가능
+  author = db.relationship('User', backref=db.backref('blogs', lazy=True))
+
+  def __repr__(self):
+    return f'[Blog {self.title} for {self.author.username}>'
+  
+class UserProfile(BaseModel):
+  firstname = db.Column(db.String(60), nullable=True)
+  lastname = db.Column(db.String(30), nullable=True)
+  address = db.Column(db.String(100), nullable=True)
+  profile_image = db.Column(db.String(255), nullable=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
+  user = db.relationship('User', backref=db.backref('profile', uselist=False))
+
+  def __repr__(self):
+    return f'[UserProfile for {self.user.username}>'
+</pre>
+</section>
+<section>
+  <h2>SqlAlchemy ORM</h2>
+  <pre>
+# Select    
+blogs = Blog.query.all()
+blogs = db.session.qury(Blog).all()
+blog = db.session.qury(Blog).filter(Blog.author_id=1).first()
+
+# Create
+db.session.add(Blog(content=content, title=title, author_id=current_user.id))
+db.session.commit()
+
+# Update
+blog.content = content
+db.session.commit()
+# Delete
+db.session.delete(blog)
+db.session.commit()
+
+# Join (using relationship)
+# SQLAlchemy automatically knows how to join based on the relationship defined in the model.
+# This returns a list of Blog objects where the author's username is 'john'.
+blogs_by_john = db.session.query(Blog).join(Blog.author).filter(User.username == 'john').all()
+
+# Join (explicit condition)
+# You can also specify the join condition explicitly.
+# This returns tuples of (Blog, User) objects.
+blogs_with_authors = db.session.query(Blog, User).join(User, Blog.author_id == User.id).all()
+for blog, author in blogs_with_authors:
+    print(f"Blog: {blog.title}, Author: {author.username}")
+
+# limit, order_by 
+profile_page = (
+  db.session.query(Profile)
+    .order_by(Profile.id.desc())
+    .limit(per_page)
+    .offset(offset)
+    .all()
+)
+# count
+count = db.session.query(Profile).count()
+
+# group_by example
+# To count the number of blogs each user has written.
+# We need to import `func` from sqlalchemy for aggregate functions like count().
+from sqlalchemy import func
+
+user_blog_counts = db.session.query(
+    User.username,
+    func.count(Blog.id).label('blog_count')
+  ).join(Blog, User.id == Blog.author_id).group_by(User.username).all()
+
+# The result will be a list of tuples, e.g., [('john', 5), ('jane', 3)]
+for username, count in user_blog_counts:
+    print(f"User: {username} has {count} blogs.")
+  </pre>
 </section>
 <section>
   <h2>java 내용 정리</h2>

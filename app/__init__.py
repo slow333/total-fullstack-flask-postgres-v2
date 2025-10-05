@@ -37,11 +37,8 @@ def create_app(config_class=Config):
     from .routes.auths import todo
     app.register_blueprint(todo.bp)
 
-    from .routes.auths import todo_f
-    app.register_blueprint(todo_f.bp)
-
-    from .routes.auths import users
-    app.register_blueprint(users.bp)
+    from .routes.auths import user_profile
+    app.register_blueprint(user_profile.bp)
 
     from .routes.auths import blog
     app.register_blueprint(blog.bp)

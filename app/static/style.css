@@ -330,6 +330,10 @@ textarea {
   font-size: var(--text-md);
   resize: vertical;
 }
+.completed {
+  font-style: italic;
+  text-decoration: line-through;
+}
 /* button, input[type='submit']{
   min-width: 50px;
   padding: 4px 10px;

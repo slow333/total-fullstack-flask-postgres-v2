@@ -15,7 +15,9 @@ class User(UserMixin, BaseModel):
     return f'{self.username}'
   
 class Todo(BaseModel):
+  title = db.Column(db.String(100), nullable=False)
   content = db.Column(db.String(200), nullable=False)
+  created = db.Column(db.DateTime, default=db.func.current_timestamp())
   completed = db.Column(db.Boolean, default=False)
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
   user = db.relationship('User', backref=db.backref('todos', lazy=True))
@@ -32,4 +34,15 @@ class Blog(BaseModel):
   author = db.relationship('User', backref=db.backref('blogs', lazy=True))
 
   def __repr__(self):
-    return f'<Blog {self.title}>'
+    return f'<Blog {self.title} for {self.author.username}>'
+  
+class UserProfile(BaseModel):
+  firstname = db.Column(db.String(60), nullable=True)
+  lastname = db.Column(db.String(30), nullable=True)
+  address = db.Column(db.String(100), nullable=True)
+  profile_image = db.Column(db.String(255), nullable=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
+  user = db.relationship('User', backref=db.backref('profile', uselist=False))
+
+  def __repr__(self):
+    return f'<UserProfile for {self.user.username}>'

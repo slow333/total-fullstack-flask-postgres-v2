@@ -4,34 +4,23 @@ from flask import (
 from flask_login import login_required, current_user
 from app import db
 from ...models import Blog
+from .utils import pagenation
 
 bp = Blueprint("blog", __name__, url_prefix="/apps/blogs")
 
 @bp.route("/")
 def blog_home():
-  page = request.args.get("page", 1, type=int)
-  per_page = 5  # 한 페이지에 5
-  offset = (page - 1) * per_page
+  page, profile_page, total_pages, page_len, start_page, end_page = pagenation(Blog)
+  blogs = Blog.query.all()
 
-  blog_page = (
-    db.session.query(Blog)
-    .order_by(Blog.id.desc())
-    .limit(per_page)
-    .offset(offset)
-    .all()
-  )
-  total = db.session.query(Blog).count()
-
-  # 페이지네이션: 현재 페이지 기준으로 최대 5개 페이지만 표시
-  total_pages = (total // per_page) + (1 if total % per_page else 0)
-  blog_page_len = len(blog_page)
-
-  start_page = max(1, page - 2)
-  end_page = min(total_pages, start_page + 4)
-  if (end_page - start_page) < 4:
-    start_page = max(1, end_page - 4)
-  
-  return render("apps/blog/blog_home.html", blogs=blog_page, page=page, total_pages=total_pages, start_page=start_page, end_page=end_page, blog_page_len=blog_page_len)
+  return render("apps/blog/blog_home.html", 
+                blogs=blogs, 
+                profiles=profile_page, 
+                page=page, 
+                total_pages=total_pages, 
+                start_page=start_page, 
+                end_page=end_page, 
+                profile_page_len=page_len)
 
 @bp.route("/create", methods=["GET", "POST"])
 @login_required
