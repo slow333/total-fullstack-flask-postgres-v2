@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flask_mail import Mail # type: ignore
 from flask_login import LoginManager
+from .admin import init_admin
 
 # SQLAlchemy 객체 생성
 db = SQLAlchemy()
@@ -24,7 +25,9 @@ def create_app(config_class=Config):
 
   # 블루프린트나 다른 라우트를 여기서 등록
   with app.app_context():
-    from .models import User
+    from .models import User, Blog, Todo, UserProfile
+    # Pass the app, db, and all models you want to manage
+    init_admin(app, db, User, Blog, Todo, UserProfile) # Add other models like Post, Comment, etc.
 
     @login_manager.user_loader
     def load_user(user_id):

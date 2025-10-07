@@ -7,6 +7,7 @@ class BaseModel(db.Model):
   id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
 class User(UserMixin, BaseModel):
+  is_admin = db.Column(db.Boolean, default=False, nullable=False)
   username = db.Column(db.String(64), unique=True, nullable=False)
   email = db.Column(db.String(255), unique=True, nullable=False)
   password = db.Column(db.Text(), nullable=False)

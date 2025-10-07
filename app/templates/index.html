@@ -122,7 +122,8 @@ if __name__ == '__main__':
   app.run(debug=True)
 </pre>
 <h3>config.py</h3>
-<p>환경 설정 변수를 저장함</p>
+<p>환경 설정 변수를 저장함 : os 환경설정을 대신해서 수행 가능</p>
+<p>관련 변수를 .evn에 설정하고 dotenv를 사용(.gitignore에 추가)</p>
 <pre>
 import os
 from dotenv import load_dotenv
@@ -147,7 +148,7 @@ class Config:
   MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
   MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  
 </pre>
-<h4>OS에서 환경 설정</h4>
+<h4>OS에서 환경 설정 : 변수설정은 .env로 대체 가능</h4>
 <pre>
 set env run script
 $ cat ~/.bashrc
@@ -278,6 +279,9 @@ user_blog_counts = db.session.query(
 for username, count in user_blog_counts:
     print(f"User: {username} has {count} blogs.")
   </pre>
+</section>
+<section>
+  <h3>gmail smtp 사용을 위해서는 myaccount.google.com/apppassowrds 에서 별도로 app 암호를 설저해야함 </h3>
 </section>
 <section>
   <h2>java 내용 정리</h2>

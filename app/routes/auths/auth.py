@@ -2,8 +2,8 @@ from flask import (
     Blueprint, request, render_template as render, current_app,
     redirect, flash, url_for # type: ignore
     )
-from werkzeug.security import generate_password_hash, check_password_hash # type: ignore
-from itsdangerous import TimedSerializer as Serializer # type: ignore
+from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask_mail import Message # type: ignore
 from flask_login import login_user, logout_user, login_required, current_user
 from app import mail
@@ -84,18 +84,23 @@ def account():
         db.session.commit()
         flash('Your account has been updated.')
         return redirect(url_for('auth.account'))
+
 @bp.route('/')
 def index():
     return redirect('/apps/')
+
 # 암호 변경 기능 --------------------------------
-def get_reset_token(user_id, expiration=1800):
-    s = Serializer(current_app.config.get('SECRET_KEY'), expiration)
-    return s.dumps({'user_id': user_id}).decode('utf-8')
+def get_reset_token(user_id):
+    s = Serializer(current_app.config.get('SECRET_KEY'))
+    # TimedJSONWebSignatureSerializer(deprecated) 에서 expiration을 넣던게 없어짐
+    # URLSafeTimedSerializer에서는 기본이 text로 decode('utf-8') 없어짐
+    return s.dumps({ 'user_id': user_id })
 
 def verify_reset_token(token):
     s = Serializer(current_app.config.get('SECRET_KEY'))
     try:
-        user_id = s.loads(token)['user_id']
+        # URLSafeTimedSerializer는 여기서 expiration을 설정 108초 이상
+        user_id = s.loads(token, max_age=1800)['user_id']
     except:
         return None
     return User.query.get(user_id)
@@ -145,4 +150,4 @@ def reset_with_token(token):
         user.password = generate_password_hash(password)
         db.session.commit()
         flash('Your password has been reset.')
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login_users'))

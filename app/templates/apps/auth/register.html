@@ -4,11 +4,12 @@
 {% block header %} Register {% endblock %}
 
 {% block content %}
-  <form method="post" class="d-flex flex-column gap-2 align-items-center mt-4">
-    <label for="username" style="width: 200px;">Username : </label><input name="username" id="username" required>
-    <label for="email" style="width: 200px;">Email: </label><input type="email" name="email" id="email" required>
-    <label for="password" style="width: 200px;">Password: </label><input type="password" name="password" id="password" required>
-    <label for="confirm_password" style="width: 200px;">Confirm Password:</label> <input type="password" name="confirm_password" id="confirm_password" required>
-    <input type="submit" value="Register">
+  <form method="post" class="form-group d-flex flex-column gap-2 align-items-center" 
+    style="max-width: 600px; margin: auto;">
+    <label for="username">Username : </label><input name="username" id="username" required>
+    <label for="email">Email: </label><input type="email" name="email" id="email" required>
+    <label for="password">Password: </label><input type="password" name="password" id="password" required>
+    <label for="confirm_password">Confirm Password:</label> <input type="password" name="confirm_password" id="confirm_password" required>
+    <input class="btn btn-primary w-100" type="submit" value="Register">
   </form>
 {% endblock %}

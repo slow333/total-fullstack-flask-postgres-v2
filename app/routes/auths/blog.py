@@ -11,7 +11,7 @@ bp = Blueprint("blog", __name__, url_prefix="/apps/blogs")
 @bp.route("/")
 def blog_home():
   page, profile_page, total_pages, page_len, start_page, end_page = pagenation(Blog)
-  blogs = Blog.query.all()
+  blogs = Blog.query.order_by(Blog.id.desc()).all()
 
   return render("apps/blog/blog_home.html", 
                 blogs=blogs, 
