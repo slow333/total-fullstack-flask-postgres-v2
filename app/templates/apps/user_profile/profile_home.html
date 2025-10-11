@@ -34,8 +34,14 @@
     {% if not loop.last %} <hr> {% endif %}
   {% endfor %}
 
-  {% with target_app="profiles", page=page, total_pages=total_pages, per_page=per_page,       page_len=profile_page_len, start_page=start_page, end_page=end_page %}
-      {% include 'apps/auth/pagenation.html' with context %}
+  {% with target_app="profiles", 
+    page=page, 
+    total_pages=total_pages,
+    per_page=per_page,       
+    page_len=page_len, 
+    start_page=start_page, 
+    end_page=end_page %}
+    {% include 'apps/auth/pagenation.html' with context %}  
   {% endwith %}
 
-{% endblock %}
+{% endblock content %}

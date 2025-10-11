@@ -1,24 +1,24 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from ... import db
+from ...extensions import db
 from ...models import Todo
 from .utils import pagenation
 from flask_login import login_required, current_user
 
-bp = Blueprint('todo', __name__, url_prefix='/apps/todos')
+bp = Blueprint('todo_app', __name__, url_prefix='/apps/todos')
 
 @bp.route('/')
-def index():
-  page, profile_page, total_pages, page_len, start_page, end_page = pagenation(Todo)
-  todos = Todo.query.all()
+def todo_home():
+  # query_result, page, per_page, total_pages, page_len, start_page,end_page
+  pagination_data = pagenation(Todo)
 
   return render_template("apps/todo/todo_home.html", 
-                todos=todos, 
-                profiles=profile_page, 
-                page=page, 
-                total_pages=total_pages, 
-                start_page=start_page, 
-                end_page=end_page, 
-                profile_page_len=page_len)
+              todos=pagination_data['query_result'], 
+              per_page=pagination_data['per_page'], 
+              page=pagination_data['page'], 
+              total_pages=pagination_data['total_pages'], 
+              start_page=pagination_data['start_page'], 
+              end_page=pagination_data['end_page'], 
+              page_len=pagination_data['page_len'])
 
 @bp.route('/create', methods=['POST', 'GET'])
 @login_required
@@ -31,12 +31,12 @@ def add_todo():
 
     if not title and not content:
         flash("타일틀과 내용을 입력해주세요.")
-        return redirect(url_for('todo.index'))
+        return redirect(url_for('todo_app.todo_home'))
     
     db.session.add(Todo(content=content, title=title, created=created, completed=completed, user_id=current_user.id))
     db.session.commit()
     
-    return redirect(url_for('todo.index'))
+    return redirect(url_for('todo_app.todo_home'))
   else:
     return render_template('apps/todo/create_todo.html')
  
@@ -59,7 +59,7 @@ def update_todo(todo_id):
     todo.completed = not todo.completed
     db.session.commit()
     
-    return redirect(url_for('todo.index'))
+    return redirect(url_for('todo_app.todo_home'))
 
 @bp.route('/delete/<int:todo_id>', methods=['POST', 'GET'])
 @login_required
@@ -72,4 +72,4 @@ def delete_todo(todo_id):
     db.session.delete(todo)
     db.session.commit()
 
-    return redirect(url_for('todo.index'))
+    return redirect(url_for('todo_app.todo_home'))

@@ -18,5 +18,8 @@
       <li><a href="/auth/register">Register </a></li>
       <li><a href="/auth/login">LogIn</a></li>
     {% endif %}
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <li><a href="/admin">ADMIN</a></li>
+    {% endif %}
   </ul>
 </nav>

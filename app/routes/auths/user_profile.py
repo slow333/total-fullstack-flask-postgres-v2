@@ -3,7 +3,7 @@ from flask import (
   Blueprint, request, redirect, url_for,
   render_template as render, flash, current_app) # type: ignore
 from ...models import UserProfile as Profile, User
-from app import db
+from ...extensions import db
 from .utils import pagenation
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
@@ -16,15 +16,17 @@ bp = Blueprint("user_profile", __name__, url_prefix="/apps/profiles")
 @bp.route("/")
 @login_required
 def profile_list():
-  page, profile_page, total_pages, page_len, start_page, end_page = pagenation(Profile)
+  # query_result, page, per_page, total_pages, page_len, start_page, end_page
+  pagination_data = pagenation(Profile)
 
   return render("apps/user_profile/profile_home.html", 
-                profiles=profile_page, 
-                page=page, 
-                total_pages=total_pages, 
-                start_page=start_page, 
-                end_page=end_page, 
-                profile_page_len=page_len)
+                profiles=pagination_data['query_result'], 
+                per_page=pagination_data['per_page'], 
+                page=pagination_data['page'], 
+                total_pages=pagination_data['total_pages'], 
+                start_page=pagination_data['start_page'], 
+                end_page=pagination_data['end_page'], 
+                page_len=pagination_data['page_len'])
 
 def save_resized_picture(form_picture):
     """Resizes and saves an uploaded picture."""

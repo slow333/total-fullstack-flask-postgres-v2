@@ -6,8 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask_mail import Message # type: ignore
 from flask_login import login_user, logout_user, login_required, current_user
-from app import mail
-from ... import db
+from ...extensions import db, mail
 from ...models import User
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')

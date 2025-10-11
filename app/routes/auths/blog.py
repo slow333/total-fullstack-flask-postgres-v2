@@ -2,25 +2,26 @@ from flask import (
   Blueprint, request, redirect, 
   render_template as render, flash, url_for) # type: ignore
 from flask_login import login_required, current_user
-from app import db
+from ...extensions import db
 from ...models import Blog
 from .utils import pagenation
 
-bp = Blueprint("blog", __name__, url_prefix="/apps/blogs")
+bp = Blueprint("blog_app", __name__, url_prefix="/apps/blogs")
 
 @bp.route("/")
 def blog_home():
-  page, profile_page, total_pages, page_len, start_page, end_page = pagenation(Blog)
-  blogs = Blog.query.order_by(Blog.id.desc()).all()
+  # query_result, page, per_page, total_pages, page_len, start_page,end_page
+  pagination_data = pagenation(Blog)
+  # blogs = Blog.query.order_by(Blog.id.desc()).all()
 
   return render("apps/blog/blog_home.html", 
-                blogs=blogs, 
-                profiles=profile_page, 
-                page=page, 
-                total_pages=total_pages, 
-                start_page=start_page, 
-                end_page=end_page, 
-                profile_page_len=page_len)
+                blogs=pagination_data['query_result'], 
+                page=pagination_data['page'], 
+                per_page=pagination_data['per_page'], 
+                total_pages=pagination_data['total_pages'], 
+                start_page=pagination_data['start_page'], 
+                end_page=pagination_data['end_page'], 
+                page_len=pagination_data['page_len'])
 
 @bp.route("/create", methods=["GET", "POST"])
 @login_required
@@ -36,7 +37,7 @@ def create_blog():
     else:
       db.session.add(Blog(title=title, content=content, comment=comment, author_id=current_user.id))
       db.session.commit()
-      return redirect(url_for("blog.blog_home"))
+      return redirect(url_for("blog_app.blog_home"))
   return render("apps/blog/create_blog.html")
 
 @bp.route("/<int:id>/edit", methods=["GET", "POST"])
@@ -73,4 +74,3 @@ def delete_blog(id):
     blog = db.session.query(Blog).filter_by(id=id).first()
     return render("apps/blog/delete_blog.html", blog=blog)
   return None
-
