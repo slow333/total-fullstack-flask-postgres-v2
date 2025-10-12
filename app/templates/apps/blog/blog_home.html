@@ -3,25 +3,25 @@
 {% block title %} MY Topic app {% endblock %}
 {% block header %}
  Blogs List
+   {% if current_user.is_authenticated %}
+   <span class="d-flex justify-content-end">
+     <a class="btn btn-outline-danger fs-sm" href="/apps/blogs/create">Create Blog</a>
+   </span>
+  {% endif %}
 {% endblock %}
 
 {% block content %}
-  {% if current_user.is_authenticated %}
-   <div class="d-flex justify-content-end mt-3 mb-3">
-     <a class="btn btn-outline-danger fs-sm" href="/apps/blogs/create">Create Blog</a>
-   </div>
-  {% endif %}
-    
+  
   {% for blog in blogs %}
-    <div class="items-container">
-      <div class="items">        
-        <h4>{{ blog['title'] }} <span style="font-size: 0.8rem;">
-            by {{ blog['author']['username'] }},
-            on: {{ blog['created'].strftime('%Y-%m-%d %H:%M') if blog['created'] else ''}} </span>
-        </h4>
+    <div class="d-flex justify-content-between align-items-start flex-column mb-3">
+      <h4>{{ blog['title'] }} <span style="font-size: 0.8rem;">
+          by {{ blog['author']['username'] }},
+          on: {{ blog['created'].strftime('%Y-%m-%d %H:%M') if blog['created'] else ''}} </span>
+      </h4>
+      <div>
         <p>{{ blog['content'] }}</p>
-        <small>{{ blog['comment'] }}</small>
-      </div>
+        <div class="mb-2"><small>| Comments: {{ blog['comment'] }}</small></div>
+      </div>      
       {% if current_user.id == blog['author_id'] %}
         <div>
           <a class="btn btn-outline-primary fs-sm" href="/apps/blogs/{{ blog['id'] }}/edit">
