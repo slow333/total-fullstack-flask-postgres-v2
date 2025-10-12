@@ -3,8 +3,6 @@
 {% block header %} Main Home {% endblock %}
 
 {% block content %}
-<section> 
-</section>
 <section>
   <h2>주요 버전</h2>
   <h3>python version: 13.6</h3>
@@ -40,10 +38,15 @@ WTForms           3.1.2 # 이버젼으로 해야 애러 안남
     /static
     /templates
     __init__.py
+    admin.py
     models.py
-config.py     
+    routes.py
+    extensions.py # app과 blueprint간 순환참조 문제 해결에 필요
 run.py
-.env
+# 환경변수 설정(마치 시스템에 설정한 것과 같은 효과를 가짐)
+.env 
+# from dotenv import load_dotenv load_dotenv()해서 사용
+config.py
 .gitignore
 requirements.txt
 </pre>
@@ -53,65 +56,186 @@ requirements.txt
 <section>
   <h3>__init__.py</h3>
   <p>__init__로 하면 자신이 속한 폴더(app)에 직접 적용됨</p>
-  <p>다른 곳에서 import 를 사용할려면
-<br>from app import mail
-<br>from ... import db </p>
+  <p>blueprint와 순환 참조를 해결하기 위해 extensions.py에 설정 분리 </p>
 <pre>
-from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
 from config import Config
-from flask_mail import Mail # type: ignore
-from flask_login import LoginManager
-
-# SQLAlchemy 객체 생성
-db = SQLAlchemy()
-# mail 객체 생성
-mail = Mail()
-# LoginManager 객체 생성(이래야 전체 프로젝트에서 사용가능)
-login_manager = LoginManager()
-login_manager.login_view = 'auth.login_users'
-login_manager.login_message_category = 'info'
+from flask_admin import Admin
+from .extensions import db, mail, login_manager
 
 def create_app(config_class=Config):
   app = Flask(__name__)
   
-  # 설정 클래스로부터 설정을 로드(config.py에 설정값을 로드함)
+  # 설정 클래스로부터 설정을 로드
   app.config.from_object(config_class)
 
   # SQLAlchemy 객체를 앱과 연결
-  # (db, mail, login_manager 설정을 config.py -> app ->순으로 받아옮)
   db.init_app(app)
   mail.init_app(app)
   login_manager.init_app(app)
 
+  # Admin 패널 초기화 및 화면 등록
+  from .admin import init_admin
+  init_admin(app, db)
+
   # 블루프린트나 다른 라우트를 여기서 등록
   with app.app_context():
-    from .models import User
 
+    from .models import User
     @login_manager.user_loader
     def load_user(user_id):
       return User.query.get(int(user_id))
     
-    # ========= 인증 관련 블루프린트 등록 ==============
-    from .routes.auths import auth
-    app.register_blueprint(auth.bp)
-...
+    # 모든 blueprints를 등록(app/routes/__init__.py)
+    from . import routes 
+    routes.init_app(app)
 
-    # ========= 콘텐츠 관련 블루프린트 등록 ==============
-    from .routes.contents import database_bp
-    app.register_blueprint(database_bp.bp)
-...
-
-    @app.route('/')
-    @app.route('/home')
-    def home():
-      return render_template('index.html')
-...    
-    
     # 데이터베이스 테이블 생성
     db.create_all()
 
   return app
+</pre>
+<h3>extensions.py</h3>
+<pre>
+from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail
+from flask_login import LoginManager
+
+# SQLAlchemy, Mail, and LoginManager instances
+db = SQLAlchemy()
+mail = Mail()
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login_users'
+login_manager.login_message_category = 'info'
+</pre>
+<h3>app/routes/__init__.py</h3>
+<pre>
+def init_app(app):
+    """Register all blueprints for the application."""
+    
+    # Main application routes
+    from . import home
+    app.register_blueprint(home.bp)
+
+    # Authentication and user-related routes
+    from .auths import auth, user_profile, todo, blog, rest_api_book_bp
+    app.register_blueprint(auth.bp)
+    app.register_blueprint(user_profile.bp)
+    app.register_blueprint(todo.bp)
+    app.register_blueprint(blog.bp)
+    app.register_blueprint(rest_api_book_bp.bp)
+
+    # Content-specific routes
+    from .contents import (
+      database_bp, dom_bp, js_bp, home_bp, java_bp, python_bp, spring_bp,
+    )
+    app.register_blueprint(database_bp.bp)
+    app.register_blueprint(dom_bp.bp)
+    app.register_blueprint(js_bp.bp)
+    app.register_blueprint(home_bp.bp)
+    app.register_blueprint(java_bp.bp)
+    app.register_blueprint(python_bp.bp)
+    app.register_blueprint(spring_bp.bp)
+
+</pre>
+<h3>admin.py</h3>
+<pre>
+from flask import redirect, url_for, flash, Blueprint, render_template
+from flask_admin import Admin, AdminIndexView, expose
+from flask_login import current_user
+from flask_admin.contrib.sqla import ModelView
+from wtforms import PasswordField
+
+# Custom Admin Index View to secure the main admin page
+class SecureAdminIndexView(AdminIndexView):
+  def is_accessible(self):
+    # Only grant access if the user is authenticated and is an admin
+    return current_user.is_authenticated and current_user.is_admin
+
+  def inaccessible_callback(self, name, **kwargs):
+    # Redirect non-admins to the home page or a login page
+    flash('You do not have permission to access the admin panel.', 'danger')
+    return redirect(url_for('auth.login_users'))
+
+# Custom Model View to secure model management pages
+class SecureModelView(ModelView):
+  def is_accessible(self):
+    # Same security check as the index view
+    return current_user.is_authenticated and current_user.is_admin
+
+  def inaccessible_callback(self, name, **kwargs):
+    # Redirect non-admins
+    flash('You do not have permission to access this resource.', 'danger')
+    return redirect(url_for('auth.login_users'))
+
+class UserView(SecureModelView):
+  # 이 메서드가 빠지면 `TypeError` 발생 가능성이 높아집니다.
+  def __init__(self, model, session, **kwargs):
+    # **kwargs를 통해 Flask-Admin의 추가 인자를 모두 받아서  부모 클래스의 생성자에 전달합니다.
+    super().__init__(model, session, **kwargs)
+  # 폼에 비밀번호 필드 추가
+  form_extra_fields = {
+    'password': PasswordField('Password')
+  }  
+  # can_delete = False  can_edit = True  can_create = True
+  # can_view_details = True
+  # column_exclude_list = ['password_hash', ] 
+  # column_searchable_list = ['username', 'email']
+  # set password-hash
+  def on_model_change(self, form, model, is_created):
+    if form.password.data:
+      model.set_password(form.password.data)
+    elif not is_created:
+      del form.password
+
+class BlogView(SecureModelView):
+  form_ajax_refs = {
+    'author': {
+      'fields': ['username', 'email'], # Fields to search against in the User model
+      'placeholder': 'Please select a user',
+      'page_size': 10,
+      'minimum_input_length': 1, # Start searching after typing at least 1 character
+    }
+  }
+class TodoView(SecureModelView):
+  form_ajax_refs = {
+    'user': {
+      'fields': ['username', 'email'], # Fields to search against in the User model
+      'placeholder': 'Please select a user',
+      'page_size': 10,
+      'minimum_input_length': 1, # Start searching after typing at least 1 character
+    }
+  }
+class UserProfileView(SecureModelView):
+  # Use AJAX for the 'user' relationship
+  # This will render a search box instead of a dropdown
+  form_ajax_refs = {
+    'user': {
+      'fields': ['username', 'email'], # Fields to search against in the User model
+      'placeholder': 'Please select a user',
+      'page_size': 10,
+      'minimum_input_length': 1, # Start searching after typing at least 1 character
+    }
+  }
+
+class BookView(SecureModelView):
+  pass
+
+def init_admin(app, db):
+  admin = Admin(
+      app,
+      name='Admin Panel',
+      template_mode='bootstrap4',
+      index_view=SecureAdminIndexView(name='Dashboard', url='/admin')
+  )
+
+  # Add all specified models to the admin interface
+  from .models import User, Blog, Todo, UserProfile, Book
+  admin.add_view(UserView(User, db.session, category='Models'))
+  admin.add_view(BlogView(Blog, db.session, category='Models'))
+  admin.add_view(TodoView(Todo, db.session, category='Models'))
+  admin.add_view(UserProfileView(UserProfile, db.session, category='Models'))
+  admin.add_view(BookView(Book, db.session, category='Models'))
 </pre>
 <h3>run.py</h3>
 <p>이렇게 별도 구성해야 app에 있는 것을 import 할 수 있음</p>
@@ -149,6 +273,16 @@ class Config:
   MAIL_USE_TLS = True
   MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
   MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  
+</pre>
+<h3>.evn</h3>
+<p>OS에 환경변수로 등록하는 것과 같은 효과를 줌</p>
+<pre>
+# PostgreSQL 데이터베이스 연결 URI
+# 형식: postgresql://사용자이름:비밀번호@호스트:포트/데이터베이스이름
+DATABASE_URL="postgresql+psycopg2://postgres:1111@localhost:5432/flask_db"
+
+MAIL_USERNAME = 'xxxx@gmail.com'
+MAIL_PASSWORD ='xxxx'
 </pre>
 <h4>OS에서 환경 설정 : 변수설정은 .env로 대체 가능</h4>
 <pre>

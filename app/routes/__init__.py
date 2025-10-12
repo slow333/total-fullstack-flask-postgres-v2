@@ -15,13 +15,7 @@ def init_app(app):
 
     # Content-specific routes
     from .contents import (
-        database_bp,
-        dom_bp,
-        js_bp,
-        home_bp,
-        java_bp,
-        python_bp,
-        spring_bp,
+      database_bp, dom_bp, js_bp, home_bp, java_bp, python_bp, spring_bp,
     )
     app.register_blueprint(database_bp.bp)
     app.register_blueprint(dom_bp.bp)

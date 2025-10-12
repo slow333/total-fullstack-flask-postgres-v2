@@ -14,17 +14,9 @@ def create_app(config_class=Config):
   mail.init_app(app)
   login_manager.init_app(app)
 
-  from .models import SecureAdminIndexView
-  admin = Admin(app, name='Admin Panel', template_mode='bootstrap3',
-          index_view=SecureAdminIndexView(name='Dashboard', url='/admin')
-  )
-  # Add all specified models to the admin interface
-  from .models import User, Blog, Todo, UserProfile, Book, UserView, UserProfileView, BlogView, TodoView, BookView
-  admin.add_view(UserView(User, db.session, category='Models'))
-  admin.add_view(BlogView(Blog, db.session, category='Models'))
-  admin.add_view(TodoView(Todo, db.session, category='Models'))
-  admin.add_view(UserProfileView(UserProfile, db.session, category='Models'))
-  admin.add_view(BookView(Book, db.session, category='Models'))
+  # Admin 패널 초기화 및 화면 등록
+  from .admin import init_admin
+  init_admin(app, db)
 
   # 블루프린트나 다른 라우트를 여기서 등록
   with app.app_context():
@@ -34,8 +26,8 @@ def create_app(config_class=Config):
     def load_user(user_id):
       return User.query.get(int(user_id))
     
-    # Register all blueprints from the routes module
-    from . import routes # This will now import your new routes.py
+    # 모든 blueprints를 등록(app/routes/__init__.py)
+    from . import routes 
     routes.init_app(app)
 
     # 데이터베이스 테이블 생성

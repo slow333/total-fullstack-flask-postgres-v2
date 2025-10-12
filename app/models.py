@@ -1,12 +1,6 @@
 from .extensions import db
 from flask_login import UserMixin
-from flask_admin import Admin, AdminIndexView, expose
-from flask_admin.model.fields import AjaxSelectField
-from flask_admin.contrib.sqla import ModelView
-from flask import redirect, url_for, flash
-from flask_login import current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from wtforms import PasswordField
 
 class BaseModel(db.Model):
   __abstract__ = True
@@ -70,77 +64,3 @@ class Book(BaseModel):
   def __repr__(self):
     return f'<Book {self.title} by {self.author}>'
   
-# Custom Admin Index View to secure the main admin page
-class SecureAdminIndexView(AdminIndexView):
-  def is_accessible(self):
-    # Only grant access if the user is authenticated and is an admin
-    return current_user.is_authenticated and current_user.is_admin
-
-  def inaccessible_callback(self, name, **kwargs):
-    # Redirect non-admins to the home page or a login page
-    flash('You do not have permission to access the admin panel.', 'danger')
-    return redirect(url_for('auth.login_users'))
-
-# Custom Model View to secure model management pages
-class SecureModelView(ModelView):
-  def is_accessible(self):
-    # Same security check as the index view
-    return current_user.is_authenticated and current_user.is_admin
-
-  def inaccessible_callback(self, name, **kwargs):
-    # Redirect non-admins
-    flash('You do not have permission to access this resource.', 'danger')
-    return redirect(url_for('auth.login_users'))
-
-class UserView(SecureModelView):
-  # 이 메서드가 빠지면 `TypeError` 발생 가능성이 높아집니다.
-  def __init__(self, model, session, **kwargs):
-    # **kwargs를 통해 Flask-Admin의 추가 인자를 모두 받아서  부모 클래스의 생성자에 전달합니다.
-    super().__init__(model, session, **kwargs)
-  # 폼에 비밀번호 필드 추가
-  form_extra_fields = {
-    'password': PasswordField('Password')
-  }  
-  # can_delete = False  can_edit = True  can_create = True
-  # can_view_details = True
-  # column_exclude_list = ['password_hash', ] 
-  # column_searchable_list = ['username', 'email']
-  # set password-hash
-  def on_model_change(self, form, model, is_created):
-    if form.password.data:
-      model.set_password(form.password.data)
-    elif not is_created:
-      del form.password
-
-class BlogView(SecureModelView):
-  form_ajax_refs = {
-    'author': {
-      'fields': ['username', 'email'], # Fields to search against in the User model
-      'placeholder': 'Please select a user',
-      'page_size': 10,
-      'minimum_input_length': 1, # Start searching after typing at least 1 character
-    }
-  }
-class TodoView(SecureModelView):
-  form_ajax_refs = {
-    'user': {
-      'fields': ['username', 'email'], # Fields to search against in the User model
-      'placeholder': 'Please select a user',
-      'page_size': 10,
-      'minimum_input_length': 1, # Start searching after typing at least 1 character
-    }
-  }
-class UserProfileView(SecureModelView):
-  # Use AJAX for the 'user' relationship
-  # This will render a search box instead of a dropdown
-  form_ajax_refs = {
-    'user': {
-      'fields': ['username', 'email'], # Fields to search against in the User model
-      'placeholder': 'Please select a user',
-      'page_size': 10,
-      'minimum_input_length': 1, # Start searching after typing at least 1 character
-    }
-  }
-
-class BookView(SecureModelView):
-  pass
