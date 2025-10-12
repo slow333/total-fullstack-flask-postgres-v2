@@ -1,10 +1,12 @@
 from .extensions import db
 from flask_login import UserMixin
 from flask_admin import Admin, AdminIndexView, expose
+from flask_admin.model.fields import AjaxSelectField
 from flask_admin.contrib.sqla import ModelView
 from flask import redirect, url_for, flash
 from flask_login import current_user
-from flask_wtf import FlaskForm
+from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms import PasswordField
 
 class BaseModel(db.Model):
   __abstract__ = True
@@ -12,14 +14,20 @@ class BaseModel(db.Model):
   id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
 class User(UserMixin, BaseModel):
-  is_admin = db.Column(db.Boolean, default=False, nullable=False)
   username = db.Column(db.String(64), unique=True, nullable=False)
   email = db.Column(db.String(255), unique=True, nullable=False)
-  password = db.Column(db.Text(), nullable=False)
+  password_hash  = db.Column(db.Text(), nullable=False)
+  is_admin = db.Column(db.Boolean, default=False, nullable=False)
+
+  def set_password(self, password):
+    self.password_hash  = generate_password_hash(password)
+    
+  def check_password(self, password):
+    return check_password_hash(self.password_hash, password)
 
   def __repr__(self):
-    return f'{self.username}'
-  
+    return f'<User {self.username}>'
+
 class Todo(BaseModel):
   title = db.Column(db.String(100), nullable=False)
   content = db.Column(db.String(200), nullable=False)
@@ -85,13 +93,54 @@ class SecureModelView(ModelView):
     return redirect(url_for('auth.login_users'))
 
 class UserView(SecureModelView):
-  # can_delete = False
-  # can_edit = True
-  # can_create = True
+  # 이 메서드가 빠지면 `TypeError` 발생 가능성이 높아집니다.
+  def __init__(self, model, session, **kwargs):
+    # **kwargs를 통해 Flask-Admin의 추가 인자를 모두 받아서  부모 클래스의 생성자에 전달합니다.
+    super().__init__(model, session, **kwargs)
+  # 폼에 비밀번호 필드 추가
+  form_extra_fields = {
+    'password': PasswordField('Password')
+  }  
+  # can_delete = False  can_edit = True  can_create = True
   # can_view_details = True
-  # column_exclude_list = ['password', ]
+  # column_exclude_list = ['password_hash', ] 
   # column_searchable_list = ['username', 'email']
-  #enable inline editing in the list view: is not working
-  # Explicitly define columns for the create/edit form to avoid relationship errors.
-  # This prevents Flask-Admin from trying to render the 'profile' relationship.
-  form_columns = ['username', 'email', 'is_admin']
+  # set password-hash
+  def on_model_change(self, form, model, is_created):
+    if form.password.data:
+      model.set_password(form.password.data)
+    elif not is_created:
+      del form.password
+
+class BlogView(SecureModelView):
+  form_ajax_refs = {
+    'author': {
+      'fields': ['username', 'email'], # Fields to search against in the User model
+      'placeholder': 'Please select a user',
+      'page_size': 10,
+      'minimum_input_length': 1, # Start searching after typing at least 1 character
+    }
+  }
+class TodoView(SecureModelView):
+  form_ajax_refs = {
+    'user': {
+      'fields': ['username', 'email'], # Fields to search against in the User model
+      'placeholder': 'Please select a user',
+      'page_size': 10,
+      'minimum_input_length': 1, # Start searching after typing at least 1 character
+    }
+  }
+class UserProfileView(SecureModelView):
+  # Use AJAX for the 'user' relationship
+  # This will render a search box instead of a dropdown
+  form_ajax_refs = {
+    'user': {
+      'fields': ['username', 'email'], # Fields to search against in the User model
+      'placeholder': 'Please select a user',
+      'page_size': 10,
+      'minimum_input_length': 1, # Start searching after typing at least 1 character
+    }
+  }
+
+class BookView(SecureModelView):
+  pass

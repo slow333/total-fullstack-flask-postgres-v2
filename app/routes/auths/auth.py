@@ -30,7 +30,8 @@ def register_users():
             flash('Passwords do not match.')
             return render('apps/auth/register.html')
         else:
-            user = User(username=username, email=email, password=generate_password_hash(password))
+            user = User(username=username, email=email, 
+                        password_hash=generate_password_hash(password))
             db.session.add(user)
             db.session.commit()
             flash('Registration successful!')
@@ -48,7 +49,7 @@ def login_users():
         user = User.query.filter_by(username=username).first()
         if user is None:
             error = 'Incorrect username.'
-        elif not check_password_hash(user.password, password):
+        elif not check_password_hash(user.password_hash, password):
             error = 'Incorrect password.'
         
         if error is None:

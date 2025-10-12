@@ -29,7 +29,7 @@ python-dotenv     1.1.1
 SQLAlchemy        2.0.43
 typing_extensions 4.15.0
 Werkzeug          3.1.3
-WTForms           3.2.1
+WTForms           3.1.2 # 이버젼으로 해야 애러 안남
   </pre>
 </section>
 <h2>프로젝트 구조</h2>
@@ -47,13 +47,15 @@ run.py
 .gitignore
 requirements.txt
 </pre>
+<h2>flask-admin error</h2>
+<p>flask-admin user crud error "error AttributeError: 'tuple' object has no attribute 'items'" ==> <strong>flask-wtf 버젼을 3.1.2로 해야 애러 안남</strong></p>
+<h4>WTForms versions 3.1.0 and newer introduced changes that are not compatible with Flask-Admin 1.6.1, leading to this crash when Flask-Admin tries to render a create or edit view</h4>
 <section>
   <h3>__init__.py</h3>
   <p>__init__로 하면 자신이 속한 폴더(app)에 직접 적용됨</p>
   <p>다른 곳에서 import 를 사용할려면
 <br>from app import mail
-<br>from ... import db
-  </p>
+<br>from ... import db </p>
 <pre>
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
@@ -221,6 +223,8 @@ class UserProfile(BaseModel):
 
   def __repr__(self):
     return f'[UserProfile for {self.user.username}>'
+
+# flask-admin 관련 
 </pre>
 </section>
 <section>

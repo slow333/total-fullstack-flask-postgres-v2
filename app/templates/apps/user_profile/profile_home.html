@@ -5,8 +5,11 @@
 
 {% block content %}
   {% if current_user.is_authenticated %}
-   <div class="d-flex justify-content-end mt-3 mb-3">
-     <a class="btn btn-outline-info fs-sm" href="/apps/profiles/create">
+   <div class="d-flex justify-content-end mt-3 mb-3 gap-2">
+    {% if current_user.is_admin %}
+      <a class="btn btn-outline-secondary fs-sm" href="/auth/register">Create User</a>
+    {% endif %} 
+     <a class="btn btn-outline-secondary fs-sm" href="/apps/profiles/create">
       Create User Profile</a>
    </div>
   {% endif %}
