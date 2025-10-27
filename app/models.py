@@ -12,7 +12,7 @@ class User(UserMixin, BaseModel):
   email = db.Column(db.String(255), unique=True, nullable=False)
   password_hash  = db.Column(db.Text(), nullable=False)
   is_admin = db.Column(db.Boolean, default=False, nullable=False)
-  blogs = db.relationship(Blog, backref=db.backref("user",lazy=True))
+  blogs = db.relationship(Blog, backref='user',lazy=True)
 
   def set_password(self, password):
     self.password_hash  = generate_password_hash(password)
